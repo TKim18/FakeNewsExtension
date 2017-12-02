@@ -12,22 +12,17 @@
 
 // LOGIC!!
 
+callMercury();
 
-performOnce();
-
-function performOnce() {
+function callMercury() {
 
 	var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
 	var location = window.location.href
 	var xhr = new XMLHttpRequest();
 
-	console.log(location)
-
 	xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
 	xhr.setRequestHeader("x-api-key", apikey);
 	xhr.send(null)
-
-	console.log(xhr)
 
 	xhr.onreadystatechange=function()
 	{
@@ -46,25 +41,57 @@ function performOnce() {
 		el.getElementsByTagName('a');
 
 		var rootNode = el;
-		console.log("Hello this is parent's type: " + rootNode.nodeType)
-		//console.log(rootNode.nodeType)
 		var htmlQ = [rootNode];
+
+		console.log(el);
 
 		while (htmlQ.length > 0) {
 			var node = htmlQ.shift();
 
 			if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
-				while(node.firstChild) {
-					node.removeChild(node.firstChild)
-				}
-				break;
+				var searchText = node.innerHTML.slice(0,100);
+				search(searchText);
+				// console.log("This is the layer we need to remove right here:" + node.className);
+				// console.log("Or we can use the div's id:" + node.id);
+				// if (node.className == "") {
+				// 	return changeById(node.id);
+				// } else {
+				// 	return changeByClassName(node.className);
+				// }
+				// node.innerHTML = '';
+				// // while(node.firstChild) {
+				// // 	node.removeChild(node.firstChild)
+				// // }
+				// break;
 			}
 			htmlQ.push.apply(htmlQ, node.children)
 		}
 	}
-
 }
 
+function search(searchText) {
+	var divs = document.getElementsByTagName('div');
+	console.log(searchText)
+	for (var i = 0; i < divs.length; i++) {
+		console.log(divs[i]);
+		console.log("YOO: " + divs[i].innerHTML.slice(0,100));
+		if (divs[i].innerHTML.slice(0,100) == searchText) {
+			console.log("WE FOUND IT BOIS: ")
+		}
+	}
+}
+
+function changeById(nodeid) {
+	console.log("Our tag we should search by is: " + nodeid);
+	var contentDiv = document.getElementById(nodeid);
+	console.log("Now that we here: " + contentDiv.innerHTML);
+	contentDiv.innerHTML = '';
+}
+
+function changeByClassName(nodeclass) {
+	console.log("Our class name is: " + nodeclass);
+	//var contentDiv = document.get
+}
 
 
 // function walk(node) 
