@@ -11,6 +11,8 @@
 // GNU General Public License for more details.
 
 // LOGIC!!
+
+
 performOnce();
 
 function performOnce() {
@@ -35,10 +37,39 @@ function performOnce() {
 		console.log("HELLOOOOO\n\n\n\n\n\n\n\n\n")
 
 		//console.log(result.content)
-		console.log(JSON.parse(result))
+		var jsonResult = JSON.parse(result);
+		var title = jsonResult.title;
+		var contentHTML = jsonResult.content;
+		
+		var el = document.createElement( 'html' );
+		el.innerHTML = contentHTML;
+		el.getElementsByTagName('a');
+
+		var rootNode = el.children[0];
+		console.log("Hello this is parent's type: " + rootNode.nodeType)
+		//console.log(rootNode.nodeType)
+		var htmlQ = [rootNode];
+
+		var level = 0
+		while (level < 3) {
+			var node = htmlQ.shift();
+			console.log("This is my current node: " + node);
+			// console.log(node.nodeType)
+			// //if (node.children.length > 2)
+			// console.log(node.children)
+			// //htmlQ = node.children
+			// //htmlQ.push.apply(htmlQ, node.children)
+			// console.log(htmlQ)
+			level++
+		}
+
+		console.log(el);
+		console.log(contentHTML);
 	}
 
 }
+
+
 
 // function walk(node) 
 // {
