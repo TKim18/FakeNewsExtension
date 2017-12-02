@@ -28,16 +28,20 @@ function callMercury() {
 
     xhr.onreadystatechange=function()
     {
-        //alert("xhr status : "+xmlhttp.readyState);
         var result = xhr.response;
 
         var jsonResult = JSON.parse(result);
         var title = jsonResult.title;
         var contentHTML = jsonResult.content;
-        
+
+        //console.log(jsonResult)
+        //console.log(jsonResult.content)
+
         var el = document.createElement( 'html' );
         el.innerHTML = contentHTML;
         el.getElementsByTagName('a');
+
+        console.log(el);
 
         var rootNode = el;
         var htmlQ = [rootNode];
@@ -46,29 +50,40 @@ function callMercury() {
             var node = htmlQ.shift();
 
             if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
-                if (node.id == "") {
-                    return changeByClassName(node.className);
+                if (node.id != "") {
+                    changeById(node.id);
+                } else if (node.className != "") {
+                    changeByClassName(node.className);
                 } else {
-                    return changeById(node.id);
+                    changeByDank(node);
                 }
+            } else {
+                htmlQ.push.apply(htmlQ, node.children)
             }
-            htmlQ.push.apply(htmlQ, node.children)
         }
     }
 }
 
 function changeById(nodeid) {
-    console.log("Our tag we should search by is: " + nodeid);
     var contentDiv = document.getElementById(nodeid);
-    console.log("Now that we here: " + contentDiv.innerHTML);
     contentDiv.innerHTML = '';
 }
 
 function changeByClassName(nodeclass) {
-    console.log("Our class name is: " + nodeclass);
     var contentDivs = document.getElementsByClassName(nodeclass);
-    console.log("Now that we here: " + contentDivs[0].innerHTML)
-    contentDivs[0].innerHTML = '';
+    for (var i = 0; i < contentDivs.length; i++) {
+        contentDivs[i].innerHTML = '';
+    }
+}
+
+function changeByDank(node) {
+    var searchText = node.innerHTML.slice(0,50);
+    var content = document.getElementsByTagName("*");
+    for (var i = 0; i < content.length; i++) {
+        if (content[i].innerHTML.slice(0,50) == searchText) {
+            content[i].parentNode.innerHTML = '';
+        }
+    }
 }
 
 
