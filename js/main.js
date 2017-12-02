@@ -11,9 +11,20 @@
 // GNU General Public License for more details.
 
 // LOGIC!!
+var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
+var location = window.location.href
+var xhr = new XMLHttpRequest();
 
+xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
+xhr.setRequestHeader("x-api-key", apikey);
+xhr.send(null)
 
-walk(document.body);
+var result = xhr.responseText;
+
+//walk(document.body);
+console.log()
+console.log(JSON.parse(result).content);
+
 
 function walk(node) 
 {
