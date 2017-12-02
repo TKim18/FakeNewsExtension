@@ -45,26 +45,22 @@ function performOnce() {
 		el.innerHTML = contentHTML;
 		el.getElementsByTagName('a');
 
-		var rootNode = el.children[0];
+		var rootNode = el;
 		console.log("Hello this is parent's type: " + rootNode.nodeType)
 		//console.log(rootNode.nodeType)
 		var htmlQ = [rootNode];
 
-		var level = 0
-		while (level < 3) {
+		while (htmlQ.length > 0) {
 			var node = htmlQ.shift();
-			console.log("This is my current node: " + node);
-			// console.log(node.nodeType)
-			// //if (node.children.length > 2)
-			// console.log(node.children)
-			// //htmlQ = node.children
-			// //htmlQ.push.apply(htmlQ, node.children)
-			// console.log(htmlQ)
-			level++
-		}
 
-		console.log(el);
-		console.log(contentHTML);
+			if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
+				while(node.firstChild) {
+					node.removeChild(node.firstChild)
+				}
+				break;
+			}
+			htmlQ.push.apply(htmlQ, node.children)
+		}
 	}
 
 }
