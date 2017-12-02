@@ -10,16 +10,16 @@
   	"16": "images/icon.png",
   	"48": "images/icon.png"
   },
-  "background": { 
-  	"persistent" : false,
-  	"scripts": ["js/background.js"] 
-  },
+  // "background": { 
+  // 	"persistent" : false,
+  // 	"scripts": ["js/background.js"] 
+  // },
   "content_scripts": [{
   	//add to matches a list of our fake news sites
-    //"matches": [ "http://*/*", "https://*/*" ],
-    "css" : [ "css/sheet.css" ],
+    "matches": [ "http://*/*", "https://*/*" ],
+    //"css" : [ "css/sheet.css" ],
     "js": [ "js/main.js" ],
-    "run_at": "document_start"
+    "run_at": "document_end"
   }],
     "page_action": {
   	"default_icon": "images/icon.png"
