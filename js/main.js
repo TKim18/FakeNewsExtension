@@ -11,64 +11,78 @@
 // GNU General Public License for more details.
 
 // LOGIC!!
-var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
-var location = window.location.href
-var xhr = new XMLHttpRequest();
+performOnce();
 
-xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
-xhr.setRequestHeader("x-api-key", apikey);
-xhr.send(null)
+function performOnce() {
 
-var result = xhr.responseText;
+	var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
+	var location = window.location.href
+	var xhr = new XMLHttpRequest();
 
-//walk(document.body);
-console.log()
-console.log(JSON.parse(result).content);
+	console.log(location)
 
+	xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
+	xhr.setRequestHeader("x-api-key", apikey);
+	xhr.send(null)
 
-function walk(node) 
-{
-	// I stole this function from here:
-	// http://is.gd/mwZp7E
-	// Which I stole from here:
-	// https://github.com/panicsteve/cloud-to-butt/blob/master/Source/content_script.js
-	var child, next;
-	switch ( node.nodeType )
+	console.log(xhr)
+
+	xhr.onreadystatechange=function()
 	{
-		case 1:  // Element
-		case 9:  // Document
-		case 11: // Document fragment
-			child = node.firstChild;
-				while ( child ) 
-				{
-					next = child.nextSibling;
-					walk(child);
-					child = next;
-				}
-			break;
-		case 3: // Text node
-			deBullshit(node);
-			break;
-		}
+	    //alert("xhr status : "+xmlhttp.readyState);
+	    var result = xhr.response;
+
+		console.log("HELLOOOOO\n\n\n\n\n\n\n\n\n")
+
+		//console.log(result.content)
+		console.log(JSON.parse(result))
+	}
+
 }
 
-function deBullshit(textNode) 
-{
-	// Hi, I hope you like slow browsing experiences.
-	textNode.nodeValue = textNode.nodeValue.
-		replace(/\bsynergy\b/gi, "BULLSHIT").
-		replace(/\bthink outside the box\b/gi, "MAKE SHIT UP").
-		replace(/\benterprise\b/gi, "OLD FART").
-		replace(/\bdata scientist\b/gi, "NECK BEARD").
-		replace(/\bbig data\b/gi, "THE BIG D").
-		replace(/\bthe cloud\b/gi, "THAT NEWFANGLED DATA STORE").
-		replace(/\bincrease roi\b/gi, "SPEND MORE MONEY").
-		replace(/\bclient[- ]centric\b/gi, "IDIOT PROOF").
-		replace(/\banalytics\b/gi, "STALKING COOKIES").
-		replace(/\binvested\b/gi, "PISSED AWAY").
-		replace(/\bdisruptive technology\b/gi, "NEW SHIT FROM TECH HIPSTERS").
-		replace(/\bcontent marketing\b/gi, "SEO FARMING").
-		replace(/\bmind map\b/gi, "BRAIN DIARRHEA").
-		replace(/\bseed funding\b/gi, "BLOOD MONEY").
-		replace(/\bweb scale\b/gi, "FRIGGIN HUGE");
-}
+// function walk(node) 
+// {
+// 	// I stole this function from here:
+// 	// http://is.gd/mwZp7E
+// 	// Which I stole from here:
+// 	// https://github.com/panicsteve/cloud-to-butt/blob/master/Source/content_script.js
+// 	var child, next;
+// 	switch ( node.nodeType )
+// 	{
+// 		case 1:  // Element
+// 		case 9:  // Document
+// 		case 11: // Document fragment
+// 			child = node.firstChild;
+// 				while ( child ) 
+// 				{
+// 					next = child.nextSibling;
+// 					walk(child);
+// 					child = next;
+// 				}
+// 			break;
+// 		case 3: // Text node
+// 			deBullshit(node);
+// 			break;
+// 		}
+// }
+
+// function deBullshit(textNode) 
+// {
+// 	// Hi, I hope you like slow browsing experiences.
+// 	textNode.nodeValue = textNode.nodeValue.
+// 		replace(/\bsynergy\b/gi, "BULLSHIT").
+// 		replace(/\bthink outside the box\b/gi, "MAKE SHIT UP").
+// 		replace(/\benterprise\b/gi, "OLD FART").
+// 		replace(/\bdata scientist\b/gi, "NECK BEARD").
+// 		replace(/\bbig data\b/gi, "THE BIG D").
+// 		replace(/\bthe cloud\b/gi, "THAT NEWFANGLED DATA STORE").
+// 		replace(/\bincrease roi\b/gi, "SPEND MORE MONEY").
+// 		replace(/\bclient[- ]centric\b/gi, "IDIOT PROOF").
+// 		replace(/\banalytics\b/gi, "STALKING COOKIES").
+// 		replace(/\binvested\b/gi, "PISSED AWAY").
+// 		replace(/\bdisruptive technology\b/gi, "NEW SHIT FROM TECH HIPSTERS").
+// 		replace(/\bcontent marketing\b/gi, "SEO FARMING").
+// 		replace(/\bmind map\b/gi, "BRAIN DIARRHEA").
+// 		replace(/\bseed funding\b/gi, "BLOOD MONEY").
+// 		replace(/\bweb scale\b/gi, "FRIGGIN HUGE");
+// }
