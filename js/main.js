@@ -20,22 +20,26 @@ function main() {
 function getCurrentArticleBody() {
     var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
     var location = window.location.href
-    var xhr = new XMLHttpRequest();
+    
+    // do not run on home pages!!!
+    if (window.location.pathname != '/' || window.location.pathname.search('index.html') > 0) {
+        var xhr = new XMLHttpRequest();
 
-    xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
-    xhr.setRequestHeader("x-api-key", apikey);
-    xhr.send(null)
+        xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
+        xhr.setRequestHeader("x-api-key", apikey);
+        xhr.send(null)
 
-    xhr.onreadystatechange=function() {
-        var result = xhr.response;
+        xhr.onreadystatechange=function() {
+            var result = xhr.response;
 
-        var jsonResult = JSON.parse(result);
-        console.log(jsonResult)
+            var jsonResult = JSON.parse(result);
+            console.log(jsonResult)
 
-        var jsonResultClean = strip(jsonResult.content)
+            var jsonResultClean = strip(jsonResult.content)
 
-        console.log(jsonResultClean)
-        getEntities(jsonResultClean, 10)
+            console.log(jsonResultClean)
+            getEntities(jsonResultClean, 10)
+        }
     }
 }
 
