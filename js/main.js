@@ -39,6 +39,8 @@ function getCurrentArticleBody() {
     }
 }
 
+
+// credits to Shog9: https://stackoverflow.com/questions/822452/strip-html-from-text-javascript
 function strip(html)
 {
    var tmp = document.createElement("DIV");
@@ -88,7 +90,7 @@ function getEntities(content, limit) {
 function queryGDELT(content, keyword, limit) {
     console.log(keyword)
     var header = 'https://api.gdeltproject.org/api/v2/doc/doc?query='
-    var ending = ' domain:apnews.com sourcelang:english&format=json'
+    var ending = ' domain:cnn.com sourcelang:english&format=json'
     var query = header+keyword+ending
     console.log(query)
     var xhr = new XMLHttpRequest();
@@ -110,7 +112,7 @@ function queryGDELT(content, keyword, limit) {
             } 
             if (Object.keys(responseJSON).length > 0) {
                 var articles = responseJSON.articles
-                console.log('REAL NEWS' + articles[0].url)
+                console.log('MATCHED NEWS' + articles[0].url)
                 getArticlesfromGDELT(articles[0].url);
             }
         
