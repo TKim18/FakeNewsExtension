@@ -49,39 +49,56 @@ function getEntities(content, limit) {
     var xhr = new XMLHttpRequest();
   
     xhr.open("POST", 'https://language.googleapis.com/v1/documents:analyzeEntitySentiment?key='+APIKEY, true);
-    xhr.setRequestHeader('content-type', 'application/json')
+    xhr.setRequestHeader('content-type', 'application/json');
+    xhr.responseType = 'json';
 
     xhr.onreadystatechange=function()
     {
-        var entities = JSON.parse(xhr.response).entities.slice(0,limit)
-        var result = ""
-        
-        for (var i = 0; i < entities.length; i++) {
-            result = result + entities[i]['name']; + ' '
+        var response = xhr.response
+
+        //console.log(response)
+        if (response != null) {
+            var entities = response.entities
+            console.log(entities.length)
+            var result = ""
+            
+            // add regex to ensure the entities are safe
+            for (var i = 3; i < 15; i++) {
+                var temp = entities[i]['name'];
+                if (temp != 'class' && !isURL(temp)) {
+                    result = result + temp + ' '
+                }
+            }
+            queryGDELT(content, result)
         }
-        queryGDELT(content, result)
     }
     xhr.send(JSON.stringify(requestpayload))
 }
 
 function queryGDELT(content, keyword) {
+    console.log(keyword)
     var header = 'https://api.gdeltproject.org/api/v2/doc/doc?query='
-    var ending = ' domain:nytimes.com sourcelang:english&format=JSON'
+    var ending = ' domain:nytimes.com sourcelang:english&format=json'
     var query = header+keyword+ending
-  
+
     var xhr = new XMLHttpRequest();
   
-    xhr.open("GET", query,true);
-  
+    xhr.open("GET", query, true);
+
     xhr.onreadystatechange=function()
     {
-        var response = JSON.parse(xhr.responseText)
-        var articles = response.articles
- 
-        if (articles.length == 0) {
-            getEntities(contents, 4)
-        } else {
-            replaceCurrentBody(articles[0])
+        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            var response = xhr.response
+            var responseJSON = JSON.parse(response)
+            var articles = responseJSON.articles
+            
+            console.log("MADE IT" + articles.length)
+
+            if (articles.length == 0) {
+                getEntities(contents, 4)
+            } else {
+                replaceCurrentBody(articles[0])
+            }
         }
     }
     xhr.send()
@@ -93,38 +110,49 @@ function replaceCurrentBody(content) {
     var location = window.location.href
     var xhr = new XMLHttpRequest();
 
+    console.log("MADE IT \n\n\n\n\n\n\n\n")
+
     xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
     xhr.setRequestHeader("x-api-key", apikey);
     xhr.send(null)
 
     xhr.onreadystatechange=function()
     {
-        var result = xhr.response;
+        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            var result = xhr.response;
 
-        var jsonResult = JSON.parse(result);
-        var title = jsonResult.title;
-        var contentHTML = jsonResult.content;
+            console.log(typeof(result))
 
-        var el = document.createElement( 'html' );
-        el.innerHTML = contentHTML;
-        el.getElementsByTagName('a');
+            var jsonResult = JSON.parse(result);
 
-        var rootNode = el;
-        var htmlQ = [rootNode];
+            var title = jsonResult.title;
+            var contentHTML = jsonResult.content;
 
-        while (htmlQ.length > 0) {
-            var node = htmlQ.shift();
+            console.log(jsonResult)
 
-            if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
-                if (node.id != "") {
-                    changeById(node.id, content);
-                } else if (node.className != "") {
-                    changeByClassName(node.className, content);
+            var el = document.createElement( 'html' );
+            el.innerHTML = contentHTML;
+            el.getElementsByTagName('a');
+
+            console.log(content)
+
+            var rootNode = el;
+            var htmlQ = [rootNode];
+
+            while (htmlQ.length > 0) {
+                var node = htmlQ.shift();
+
+                if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
+                    if (node.id != "") {
+                        changeById(node.id, content);
+                    } else if (node.className != "") {
+                        changeByClassName(node.className, content);
+                    } else {
+                        changeByDank(node, content);
+                    }
                 } else {
-                    changeByDank(node, content);
+                    htmlQ.push.apply(htmlQ, node.children)
                 }
-            } else {
-                htmlQ.push.apply(htmlQ, node.children)
             }
         }
     }
@@ -150,6 +178,16 @@ function changeByDank(node, content) {
             content[i].parentNode.innerHTML = content;
         }
     }
+}
+
+function isURL(str) {
+  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
+  '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+  '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+  '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  return pattern.test(str);
 }
 
 main()
