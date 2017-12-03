@@ -14,7 +14,6 @@ var APIKEY = 'AIzaSyBmTwDI9UG_W40YXphzCK8fz1CuvNbz5h0'
 
 function main() {
     //Any additional setup can go here
-
     getCurrentArticleBody()
 }
 
@@ -31,9 +30,20 @@ function getCurrentArticleBody() {
         var result = xhr.response;
 
         var jsonResult = JSON.parse(result);
+        console.log(jsonResult)
 
-        getEntities(jsonResult.content, 5)
+        var jsonResultClean = strip(jsonResult.content)
+
+        console.log(jsonResultClean)
+        getEntities(jsonResultClean, 10)
     }
+}
+
+function strip(html)
+{
+   var tmp = document.createElement("DIV");
+   tmp.innerHTML = html;
+   return tmp.textContent || tmp.innerText || "";
 }
 
 function getEntities(content, limit) {
@@ -56,33 +66,33 @@ function getEntities(content, limit) {
     {
         var response = xhr.response
 
-        //console.log(response)
         if (response != null) {
             var entities = response.entities
             console.log(entities.length)
             var result = ""
-            
-            // add regex to ensure the entities are safe
-            for (var i = 3; i < 15; i++) {
+            console.log(entities)
+            for (var i = 3; i < limit-3 ; i++) {
                 var temp = entities[i]['name'];
-                if (temp != 'class' && !isURL(temp)) {
-                    result = result + temp + ' '
+                if (temp.length > 4) {
+                //if (temp != 'class' && !isURL(temp)) {
+                    result = result + '"'+temp+'"' + ' '
                 }
             }
-            queryGDELT(content, result)
+            console.log('HERE ARE MY KEYWORDS YO' + result)
+            queryGDELT(content, result, limit)
         }
     }
     xhr.send(JSON.stringify(requestpayload))
 }
 
-function queryGDELT(content, keyword) {
+function queryGDELT(content, keyword, limit) {
     console.log(keyword)
     var header = 'https://api.gdeltproject.org/api/v2/doc/doc?query='
-    var ending = ' domain:nytimes.com sourcelang:english&format=json'
+    var ending = ' domain:apnews.com sourcelang:english&format=json'
     var query = header+keyword+ending
-
+    console.log(query)
     var xhr = new XMLHttpRequest();
-  
+
     xhr.open("GET", query, true);
 
     xhr.onreadystatechange=function()
@@ -90,28 +100,53 @@ function queryGDELT(content, keyword) {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             var response = xhr.response
             var responseJSON = JSON.parse(response)
-            var articles = responseJSON.articles
-            
-            console.log("MADE IT" + articles.length)
+            console.log(responseJSON)
 
-            if (articles.length == 0) {
-                getEntities(contents, 4)
-            } else {
-                replaceCurrentBody(articles[0])
+
+            if (Object.keys(responseJSON).length == 0 && limit != 1) {
+                    console.log('STILL TRYING TO FIND ARTICLE WITH KEYWORD SIZE: ' + limit)
+                    getEntities(content, limit-1)
+                }
+            } 
+            if (Object.keys(responseJSON).length > 0) {
+                var articles = responseJSON.articles
+                console.log('REAL NEWS' + articles[0].url)
+                getArticlesfromGDELT(articles[0].url);
             }
-        }
+        
     }
     xhr.send()
 }
 
 
-function replaceCurrentBody(content) {
+function getArticlesfromGDELT(url) {
     var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
+    var mercuryGET = "https://mercury.postlight.com/parser?url="+url
+    var xhr = new XMLHttpRequest();
+  
+    xhr.open("GET", mercuryGET, true);
+    xhr.setRequestHeader("x-api-key",apikey)
+    xhr.setRequestHeader('content-type', 'application/json')
+    xhr.onreadystatechange=function()
+    {
+        var response = xhr.responseText;
+        var parsed = JSON.parse(response);
+        var content = parsed.content;
+        var photo = parsed.lead_image_url
+
+        replaceCurrentBody(content, photo)
+    }
+    xhr.send()
+}
+
+
+function replaceCurrentBody(content, photo) {
+    var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
+
     var location = window.location.href
     var xhr = new XMLHttpRequest();
 
-    console.log("MADE IT \n\n\n\n\n\n\n\n")
-
+    console.log(content)
     xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
     xhr.setRequestHeader("x-api-key", apikey);
     xhr.send(null)
@@ -120,28 +155,27 @@ function replaceCurrentBody(content) {
     {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             var result = xhr.response;
-
-            console.log(typeof(result))
-
             var jsonResult = JSON.parse(result);
 
             var title = jsonResult.title;
             var contentHTML = jsonResult.content;
+            var currPhoto = jsonResult.lead_image_url;
 
-            console.log(jsonResult)
+            //console.log(jsonResult)
 
             var el = document.createElement( 'html' );
             el.innerHTML = contentHTML;
             el.getElementsByTagName('a');
 
-            console.log(content)
-
             var rootNode = el;
             var htmlQ = [rootNode];
 
+            if (currPhoto && photo) {
+                deleteImage(currPhoto)
+            }
+
             while (htmlQ.length > 0) {
                 var node = htmlQ.shift();
-
                 if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
                     if (node.id != "") {
                         changeById(node.id, content);
@@ -165,9 +199,11 @@ function changeById(nodeid, content) {
 
 function changeByClassName(nodeclass, content) {
     var contentDivs = document.getElementsByClassName(nodeclass);
-    for (var i = 0; i < contentDivs.length; i++) {
-        contentDivs[i].innerHTML = content;
-    }
+    console.log("got class")
+    contentDivs[0].innerHTML = content;    
+    // for (var i = 0; i < contentDivs.length; i++) {
+    //     contentDivs[i].innerHTML = content;
+    // }
 }
 
 function changeByDank(node, content) {
@@ -178,6 +214,21 @@ function changeByDank(node, content) {
             content[i].parentNode.innerHTML = content;
         }
     }
+}
+
+function deleteImage(image) {
+    var allImages = document.getElementsByTagName("img");
+    for(var i = 0, max = allImages.length; i < max; i++){
+        console.log(allImages[i].src)
+        if (allImages[i].src.indexOf(image.slice(0,15) != -1)){
+           allImages[i].parentNode.removeChild(allImages[i]);
+           break;
+        }
+    }
+}
+
+function changeImage(a) {
+    document.getElementById("img").src=a;
 }
 
 function isURL(str) {

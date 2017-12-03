@@ -19,10 +19,10 @@
     "matches": [ "http://*/*", "https://*/*" ],
     //"css" : [ "css/sheet.css" ],
     "js": [ "js/main.js" ],
-    "run_at": "document_end"
+    "run_at": "document_start"
   }],
     "page_action": {
   	"default_icon": "images/icon.png"
   },
-  "permissions": [ "<all_urls>" ]
+  "permissions": [ "<all_urls>"]
 }
