@@ -12,12 +12,13 @@
 
 // LOGIC!!
 
-callMercury();
+//callMercury();
+queryGDELT('Timothy%20Kardashian') ;
 
 function callMercury() {
 
 	var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
-	var location = window.location.href
+	var location = window.location.href //url of the site
 	var xhr = new XMLHttpRequest();
 
 	xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
@@ -93,6 +94,31 @@ function changeByClassName(nodeclass) {
 	//var contentDiv = document.get
 }
 
+function queryGDELT(query) {
+  var APIKEY = 'AIzaSyBmTwDI9UG_W40YXphzCK8fz1CuvNbz5h0'
+  var gdelt = 'https://api.gdeltproject.org/api/v2/doc/doc?query='+query+'&mode=artlist&maxrecords=10&timespan=1week&format=json'
+  console.log(gdelt)
+  
+  var xhr = new XMLHttpRequest();
+  
+  xhr.open("GET", gdelt,true);
+  xhr.setRequestHeader("x-api-key",APIKEY)
+  
+  
+  xhr.onreadstatechange=function()
+  {
+      var response = JSON.parse(body)
+      var articles = response.articles
+      articles.map(function(curr, ind, arr) {
+      	console.log(curr.title)
+      	console.log(curr.url)
+      	console.log(curr.domain)
+      	console.log(curr.seendate)
+      	getArticlesfromGDELT(curr.url)
+      })
+    }
+  xhr.send()
+}
 
 // function walk(node) 
 // {
