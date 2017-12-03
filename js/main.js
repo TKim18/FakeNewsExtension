@@ -10,15 +10,85 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// LOGIC!!
+var APIKEY = 'AIzaSyBmTwDI9UG_W40YXphzCK8fz1CuvNbz5h0'
 
-//callMercury();
-queryGDELT('Timothy%20Kardashian') ;
+function main() {
+    //Any additional setup can go here
 
-callMercury();
+    getCurrentArticleBody()
+}
 
-function callMercury() {
+function getCurrentArticleBody() {
+    var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
+    var location = window.location.href
+    var xhr = new XMLHttpRequest();
 
+    xhr.open("GET", "https://mercury.postlight.com/parser?url="+location, true);
+    xhr.setRequestHeader("x-api-key", apikey);
+    xhr.send(null)
+
+    xhr.onreadystatechange=function() {
+        var result = xhr.response;
+
+        var jsonResult = JSON.parse(result);
+
+        getEntities(jsonResult.content, 5)
+    }
+}
+
+function getEntities(content, limit) {
+    var requestpayload = {
+        "document":{
+            "type": "PLAIN_TEXT",
+            "language": "EN",
+            "content": content
+        },
+        "encodingType":"UTF8"
+    }
+    console.log(requestpayload)
+    var xhr = new XMLHttpRequest();
+  
+    xhr.open("POST", 'https://language.googleapis.com/v1/documents:analyzeEntitySentiment?key='+APIKEY, true);
+    xhr.setRequestHeader('content-type', 'application/json')
+
+    xhr.onreadystatechange=function()
+    {
+        var entities = JSON.parse(xhr.response).entities.slice(0,limit)
+        var result = ""
+        
+        for (var i = 0; i < entities.length; i++) {
+            result = result + entities[i]['name']; + ' '
+        }
+        queryGDELT(content, result)
+    }
+    xhr.send(JSON.stringify(requestpayload))
+}
+
+function queryGDELT(content, keyword) {
+    var header = 'https://api.gdeltproject.org/api/v2/doc/doc?query='
+    var ending = ' domain:nytimes.com sourcelang:english&format=JSON'
+    var query = header+keyword+ending
+  
+    var xhr = new XMLHttpRequest();
+  
+    xhr.open("GET", query,true);
+  
+    xhr.onreadystatechange=function()
+    {
+        var response = JSON.parse(xhr.responseText)
+        var articles = response.articles
+ 
+        if (articles.length == 0) {
+            getEntities(contents, 4)
+        } else {
+            replaceCurrentBody(articles[0])
+        }
+    }
+    xhr.send()
+}
+
+
+function replaceCurrentBody(content) {
     var apikey = 'wJQ6DDdVVYv51A6FVlVWHbDrv1dG3ksaBt2NECZn'
     var location = window.location.href
     var xhr = new XMLHttpRequest();
@@ -35,14 +105,9 @@ function callMercury() {
         var title = jsonResult.title;
         var contentHTML = jsonResult.content;
 
-        //console.log(jsonResult)
-        //console.log(jsonResult.content)
-
         var el = document.createElement( 'html' );
         el.innerHTML = contentHTML;
         el.getElementsByTagName('a');
-
-        console.log(el);
 
         var rootNode = el;
         var htmlQ = [rootNode];
@@ -52,11 +117,11 @@ function callMercury() {
 
             if (node.nodeName.toLowerCase() === 'div' && node.children.length > 2) {
                 if (node.id != "") {
-                    changeById(node.id);
+                    changeById(node.id, content);
                 } else if (node.className != "") {
-                    changeByClassName(node.className);
+                    changeByClassName(node.className, content);
                 } else {
-                    changeByDank(node);
+                    changeByDank(node, content);
                 }
             } else {
                 htmlQ.push.apply(htmlQ, node.children)
@@ -65,97 +130,26 @@ function callMercury() {
     }
 }
 
-function changeById(nodeid) {
+function changeById(nodeid, content) {
     var contentDiv = document.getElementById(nodeid);
-    contentDiv.innerHTML = '';
+    contentDiv.innerHTML = content;
 }
 
-function changeByClassName(nodeclass) {
+function changeByClassName(nodeclass, content) {
     var contentDivs = document.getElementsByClassName(nodeclass);
     for (var i = 0; i < contentDivs.length; i++) {
-        contentDivs[i].innerHTML = '';
+        contentDivs[i].innerHTML = content;
     }
 }
 
-function changeByDank(node) {
+function changeByDank(node, content) {
     var searchText = node.innerHTML.slice(0,50);
     var content = document.getElementsByTagName("*");
     for (var i = 0; i < content.length; i++) {
         if (content[i].innerHTML.slice(0,50) == searchText) {
-            content[i].parentNode.innerHTML = '';
+            content[i].parentNode.innerHTML = content;
         }
     }
 }
 
-function queryGDELT(query) {
-  var APIKEY = 'AIzaSyBmTwDI9UG_W40YXphzCK8fz1CuvNbz5h0'
-  var gdelt = 'https://api.gdeltproject.org/api/v2/doc/doc?query='+query+'&mode=artlist&maxrecords=10&timespan=1week&format=json'
-  console.log(gdelt)
-  
-  var xhr = new XMLHttpRequest();
-  
-  xhr.open("GET", gdelt,true);
-  xhr.setRequestHeader("x-api-key",APIKEY)
-  
-  
-  xhr.onreadstatechange=function()
-  {
-      var response = JSON.parse(body)
-      var articles = response.articles
-      articles.map(function(curr, ind, arr) {
-      	console.log(curr.title)
-      	console.log(curr.url)
-      	console.log(curr.domain)
-      	console.log(curr.seendate)
-      	getArticlesfromGDELT(curr.url)
-      })
-    }
-  xhr.send()
-}
-
-// function walk(node) 
-// {
-//  // I stole this function from here:
-//  // http://is.gd/mwZp7E
-//  // Which I stole from here:
-//  // https://github.com/panicsteve/cloud-to-butt/blob/master/Source/content_script.js
-//  var child, next;
-//  switch ( node.nodeType )
-//  {
-//      case 1:  // Element
-//      case 9:  // Document
-//      case 11: // Document fragment
-//          child = node.firstChild;
-//              while ( child ) 
-//              {
-//                  next = child.nextSibling;
-//                  walk(child);
-//                  child = next;
-//              }
-//          break;
-//      case 3: // Text node
-//          deBullshit(node);
-//          break;
-//      }
-// }
-
-// function deBullshit(textNode) 
-// {
-//  // Hi, I hope you like slow browsing experiences.
-//  textNode.nodeValue = textNode.nodeValue.
-//      replace(/\bsynergy\b/gi, "BULLSHIT").
-//      replace(/\bthink outside the box\b/gi, "MAKE SHIT UP").
-//      replace(/\benterprise\b/gi, "OLD FART").
-//      replace(/\bdata scientist\b/gi, "NECK BEARD").
-//      replace(/\bbig data\b/gi, "THE BIG D").
-//      replace(/\bthe cloud\b/gi, "THAT NEWFANGLED DATA STORE").
-//      replace(/\bincrease roi\b/gi, "SPEND MORE MONEY").
-//      replace(/\bclient[- ]centric\b/gi, "IDIOT PROOF").
-//      replace(/\banalytics\b/gi, "STALKING COOKIES").
-//      replace(/\binvested\b/gi, "PISSED AWAY").
-//      replace(/\bdisruptive technology\b/gi, "NEW SHIT FROM TECH HIPSTERS").
-//      replace(/\bcontent marketing\b/gi, "SEO FARMING").
-//      replace(/\bmind map\b/gi, "BRAIN DIARRHEA").
-//      replace(/\bseed funding\b/gi, "BLOOD MONEY").
-//      replace(/\bweb scale\b/gi, "FRIGGIN HUGE");
-// }
+main()
